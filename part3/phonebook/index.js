@@ -76,6 +76,22 @@ app.post("/api/persons", (request, response) => {
     });
   }
 
+  if (!body.number) {
+    return response.status(400).json({
+      error: "number missing",
+    });
+  }
+
+  if (
+    persons.some(
+      (p) => p.name.toLocaleLowerCase() === body.name.toLocaleLowerCase()
+    )
+  ) {
+    return response.status(400).json({
+      error: "name must be unique",
+    });
+  }
+
   const person = {
     id: generateRandomId(),
     name: body.name,
