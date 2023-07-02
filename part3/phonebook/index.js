@@ -1,7 +1,10 @@
 const express = require("express");
+const morgan = require("morgan");
+
 const app = express();
 
-app.use(express.json());
+app.use(morgan("tiny"));
+app.use(express.json(body));
 
 let persons = [
   {
@@ -70,6 +73,8 @@ const generateRandomId = () => {
 app.post("/api/persons", (request, response) => {
   const body = request.body;
 
+  console.log("Received data: ", body);
+
   if (!body.name) {
     return response.status(400).json({
       error: "name missing",
@@ -102,6 +107,12 @@ app.post("/api/persons", (request, response) => {
 
   response.json(person);
 });
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: "unknown endpoint" });
+};
+
+app.use(unknownEndpoint);
 
 const PORT = 3001;
 app.listen(PORT);
