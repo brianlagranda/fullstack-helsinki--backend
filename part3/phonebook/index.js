@@ -3,8 +3,20 @@ const morgan = require("morgan");
 
 const app = express();
 
-app.use(morgan("tiny"));
-app.use(express.json(body));
+// app.use(morgan("tiny")); -- Code for exercise 3.7, i've used custom config on 3.8
+// so i don't need tiny config anymore.
+
+app.use(express.json());
+
+morgan.token("person", (request, response) => {
+  return JSON.stringify(request.body);
+});
+
+app.use(
+  morgan(
+    ":method :url :status :res[content-length] - :response-time ms :person"
+  )
+);
 
 let persons = [
   {
@@ -72,8 +84,6 @@ const generateRandomId = () => {
 
 app.post("/api/persons", (request, response) => {
   const body = request.body;
-
-  console.log("Received data: ", body);
 
   if (!body.name) {
     return response.status(400).json({
