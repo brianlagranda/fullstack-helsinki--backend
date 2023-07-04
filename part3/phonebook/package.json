@@ -6,8 +6,13 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:ui": "@powershell Remove-Item -Recurse -Force build && cd ../../../fullstack-helsinki/part2/phonebook && npm run build && @powershell Copy-Item build -Recurse ../../../fullstack-helsinki--backend/part3/phonebook",
+    "deploy": "fly deploy",
+    "deploy:full": "npm run build:ui && npm run deploy",
+    "logs:prod": "fly logs"
   },
+  "proxy": "http://localhost:3001",
   "author": "Brian Lagranda",
   "license": "ISC",
   "dependencies": {
@@ -15,6 +20,7 @@
     "morgan": "^1.10.0"
   },
   "devDependencies": {
+    "@flydotio/dockerfile": "^0.2.16",
     "nodemon": "^2.0.22"
   }
 }

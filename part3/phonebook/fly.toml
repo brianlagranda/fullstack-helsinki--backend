@@ -1,0 +1,22 @@
+# fly.toml app configuration file generated for broken-sky-8600 on 2023-07-04T13:18:23-03:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "broken-sky-8600"
+primary_region = "eze"
+
+[http_service]
+  internal_port = 8080
+  http_checks = []
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[env]
+PORT = "8080"
+
+[experimental]
+  auto_rollback = true
