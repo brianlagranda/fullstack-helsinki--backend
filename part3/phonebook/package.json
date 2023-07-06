@@ -7,7 +7,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:ui": "@powershell Remove-Item -Recurse -Force build && cd ../../../fullstack-helsinki/part2/phonebook && npm run build && @powershell Copy-Item build -Recurse ../../../fullstack-helsinki--backend/part3/phonebook",
+    "build:ui": "rm -rf build && cd ../../../fullstack-helsinki/part2/phonebook && npm run build && cp -r build ../../../fullstack-helsinki--backend/part3/phonebook",
     "deploy": "fly deploy",
     "deploy:full": "npm run build:ui && npm run deploy",
     "logs:prod": "fly logs"
@@ -16,6 +16,8 @@
   "author": "Brian Lagranda",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "mongoose": "^7.3.1",
     "morgan": "^1.10.0"
