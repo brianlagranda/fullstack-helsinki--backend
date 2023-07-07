@@ -1,8 +1,5 @@
 const mongoose = require("mongoose");
 
-const newName = process.argv[3];
-const newNumber = process.argv[4];
-
 mongoose.set("strictQuery", false);
 
 const url = process.env.MONGODB_URI;
@@ -12,7 +9,7 @@ console.log("connecting to", url);
 mongoose
   .connect(url)
 
-  .then((result) => {
+  .then(() => {
     console.log("connected to MongoDB");
   })
   .catch((error) => {
@@ -20,8 +17,20 @@ mongoose
   });
 
 const personSchema = new mongoose.Schema({
-  name: String,
-  number: String,
+  name: {
+    type: String,
+    minLength: 3,
+    required: true,
+  },
+  number: {
+    type: String,
+    validate: {
+      validator: (number) =>
+        number.length > 8 && /^\d{2,3}-\d{5,}$/.test(number),
+      message: (props) => `${props.value} is not a valid phone number!`,
+    },
+    required: [true, "User phone number required"],
+  },
 });
 
 personSchema.set("toJSON", {

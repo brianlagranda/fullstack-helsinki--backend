@@ -10,7 +10,8 @@
     "build:ui": "rm -rf build && cd ../../../fullstack-helsinki/part2/phonebook && npm run build && cp -r build ../../../fullstack-helsinki--backend/part3/phonebook",
     "deploy": "fly deploy",
     "deploy:full": "npm run build:ui && npm run deploy",
-    "logs:prod": "fly logs"
+    "logs:prod": "fly logs",
+    "lint": "eslint ."
   },
   "proxy": "http://localhost:3001",
   "author": "Brian Lagranda",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@flydotio/dockerfile": "^0.2.16",
+    "eslint": "^8.44.0",
     "nodemon": "^2.0.22"
   }
 }
