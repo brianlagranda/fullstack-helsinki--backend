@@ -1,8 +1,8 @@
-const dummy = () => {
+const dummy = (blogs) => {
   return 1;
 };
 
-const emptyList = () => {
+const emptyList = (blogs) => {
   return "";
 };
 
