@@ -47,13 +47,40 @@ describe("correct amount of blog posts", () => {
   });
 });
 
-/* describe("unique identifier property of the blog posts is named id", () => {
-  test("all blog posts are returned", async () => {
+describe("unique identifier property of the blog posts is named id", () => {
+  test("every blog posts id is defined", async () => {
     const response = await api.get("/api/blogs");
 
-    expect(response.body).toBeDefined("id");
+    const blogId = response.body.map((r) => r.id);
+    expect(blogId).toBeDefined();
   });
-}); */
+});
+
+describe("creating new blog post", () => {
+  test("a valid blog post can be added", async () => {
+    const newBlogPost = {
+      _id: "5a422bc61b54a676234d17fe",
+      title: "From my life",
+      author: "Edsger W. Dijkstra",
+      url: "http://www.cs.utexas.edu/users/EWD/ewd11xx/EWD1166.PDF",
+      likes: 0,
+      __v: 0,
+    };
+
+    await api
+      .post("/api/blogs")
+      .send(newBlogPost)
+      .expect(201)
+      .expect("Content-Type", /application\/json/);
+
+    const response = await api.get("/api/blogs");
+
+    const title = response.body.map((r) => r.title);
+
+    expect(response.body).toHaveLength(initialBlogs.length + 1);
+    expect(title).toContain("From my life");
+  });
+});
 
 afterAll(async () => {
   await mongoose.connection.close();
