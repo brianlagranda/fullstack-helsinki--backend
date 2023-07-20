@@ -1,5 +1,16 @@
 const listHelper = require("../utils/list_helper");
 
+const listWithOneBlog = [
+  {
+    _id: "64b01ec22d35c5045114f0b2",
+    title: "Go To Statement Considered Harmful",
+    author: "Edsger W. Dijkstra",
+    url: "http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html",
+    likes: 5,
+    __v: 0,
+  },
+];
+
 const listWithBlogs = [
   {
     _id: "5a422a851b54a676234d17f7",
@@ -73,17 +84,6 @@ describe("total likes", () => {
     const result = listHelper.emptyList(blogs);
     expect(result).toBe("");
   });
-
-  const listWithOneBlog = [
-    {
-      _id: "64b01ec22d35c5045114f0b2",
-      title: "Go To Statement Considered Harmful",
-      author: "Edsger W. Dijkstra",
-      url: "http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html",
-      likes: 5,
-      __v: 0,
-    },
-  ];
 
   test("when list has only one blog, equals the likes of that", () => {
     const result = listHelper.totalLikes(listWithOneBlog);

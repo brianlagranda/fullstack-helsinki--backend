@@ -47,6 +47,14 @@ describe("correct amount of blog posts", () => {
   });
 });
 
+/* describe("unique identifier property of the blog posts is named id", () => {
+  test("all blog posts are returned", async () => {
+    const response = await api.get("/api/blogs");
+
+    expect(response.body).toBeDefined("id");
+  });
+}); */
+
 afterAll(async () => {
   await mongoose.connection.close();
 });
