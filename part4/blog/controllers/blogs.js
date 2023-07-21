@@ -18,7 +18,7 @@ blogsRouter.get("/:id", (request, response, next) => {
     .catch((error) => next(error));
 });
 
-blogsRouter.post("/", (request, response, next) => {
+blogsRouter.post("/", async (request, response, next) => {
   const blog = new Blog(request.body);
 
   blog
