@@ -76,12 +76,10 @@ test("blog posts added with no likes by default will have zero likes", async () 
 
   const blogsAtEnd = await helper.blogsInDb();
 
-  console.log(blogsAtEnd[-1]["likes"]);
-
   expect(blogsAtEnd[-1]["likes"]).toBe(0);
 });
 
-test("if the title or url are missing", async () => {
+test("title or url missing", async () => {
   const newBlogPost = {
     _id: "5a422bc61b54a676234d17fc",
     author: "Robert C. Martin",
