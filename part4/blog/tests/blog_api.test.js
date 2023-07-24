@@ -9,11 +9,10 @@ const Blog = require("../models/blog");
 beforeEach(async () => {
   await Blog.deleteMany({});
 
-  let blogObject = new Blog(helper.initialBlogs[0]);
-  await blogObject.save();
-
-  blogObject = new Blog(helper.initialBlogs[1]);
-  await blogObject.save();
+  for (let blog of helper.initialBlogs) {
+    let blogObject = new Blog(blog);
+    await blogObject.save();
+  }
 });
 
 test("all blog posts are returned", async () => {
@@ -68,15 +67,13 @@ test("blog posts added with no likes by default will have zero likes", async () 
     __v: 0,
   };
 
-  await api
+  const result = await api
     .post("/api/blogs")
     .send(newBlogPost)
     .expect(201)
     .expect("Content-Type", /application\/json/);
 
-  const blogsAtEnd = await helper.blogsInDb();
-
-  expect(blogsAtEnd[-1]["likes"]).toBe(0);
+  expect(result.body.likes).toBe(0);
 });
 
 test("title or url missing", async () => {
@@ -92,6 +89,53 @@ test("title or url missing", async () => {
   const blogsAtEnd = await helper.blogsInDb();
 
   expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
+});
+
+describe("deletion of a blog", () => {
+  test("succeeds with status code 204 if id is valid", async () => {
+    const blogsAtStart = await helper.blogsInDb();
+    const blogToDelete = blogsAtStart[0];
+
+    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+
+    const blogsAtEnd = await helper.blogsInDb();
+
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length - 1);
+
+    const titles = blogsAtEnd.map((r) => r.title);
+
+    expect(titles).not.toContain(blogToDelete.title);
+  });
+});
+
+describe("updating a blog", () => {
+  test("succeeds with status code 202 if id is valid", async () => {
+    const blogsAtStart = await helper.blogsInDb();
+    const blogToUpdate = blogsAtStart[0];
+
+    const updatedBlog = {
+      ...blogToUpdate,
+      likes: blogToUpdate.likes + 1,
+    };
+
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(updatedBlog)
+      .expect(204);
+
+    console.log(updatedBlog);
+
+    const blogsAtEnd = await helper.blogsInDb();
+
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
+
+    const updatedBlogInDb = blogsAtEnd.find(
+      (blog) => blog.id === blogToUpdate.id
+    );
+
+    console.log(updatedBlogInDb);
+    expect(updatedBlogInDb.likes).toBe(blogToUpdate.likes + 1);
+  });
 });
 
 afterAll(async () => {
