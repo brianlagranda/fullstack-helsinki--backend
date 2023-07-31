@@ -28,8 +28,21 @@ const errorHandler = (error, request, response, next) => {
   next(error);
 };
 
+const tokenExtractor = (request, response, next) => {
+  const authorization = request.get("authorization");
+  if (authorization && authorization.startsWith("Bearer ")) {
+    request.token = authorization.replace("Bearer ", "");
+  } else {
+    return response
+      .status(401)
+      .json({ error: "No token found in the request" });
+  }
+  next();
+};
+
 module.exports = {
   requestLogger,
   unknownEndpoint,
   errorHandler,
+  tokenExtractor,
 };
