@@ -6,6 +6,8 @@ const api = supertest(app);
 
 const Blog = require("../models/blog");
 
+let token = null;
+
 beforeEach(async () => {
   await Blog.deleteMany({});
 
@@ -35,60 +37,71 @@ test("every blog posts unique identifier is named id", async () => {
   expect(blogId).toBeDefined();
 });
 
-test("a valid blog post can be added", async () => {
-  const newBlogPost = {
-    _id: "5a422bc61b54a676234d17fe",
-    title: "From my life",
-    author: "Edsger W. Dijkstra",
-    url: "http://www.cs.utexas.edu/users/EWD/ewd11xx/EWD1166.PDF",
-    likes: 0,
-    __v: 0,
-  };
+describe("addition of a new blog", () => {
+  beforeEach(async () => {
+    const login = await api
+      .post("/api/login")
+      .send({ username: "blagranda", password: "testingapp2" });
+    token = login.body.token;
+  });
+  test("a valid blog post can be added", async () => {
+    const newBlogPost = {
+      _id: "5a422bc61b54a676234d17fe",
+      title: "From my life",
+      author: "Edsger W. Dijkstra",
+      url: "http://www.cs.utexas.edu/users/EWD/ewd11xx/EWD1166.PDF",
+      likes: 0,
+      __v: 0,
+    };
 
-  await api
-    .post("/api/blogs")
-    .send(newBlogPost)
-    .expect(201)
-    .expect("Content-Type", /application\/json/);
+    console.log("TOKEN:", token);
 
-  const blogsAtEnd = await helper.blogsInDb();
-  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1);
+    await api
+      .post("/api/blogs")
+      .send(newBlogPost)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(201)
+      .expect("Content-Type", /application\/json/);
 
-  const title = blogsAtEnd.map((r) => r.title);
-  expect(title).toContain("From my life");
-});
+    const blogsAtEnd = await helper.blogsInDb();
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1);
 
-test("blog posts added with no likes by default will have zero likes", async () => {
-  const newBlogPost = {
-    _id: "5a422bc61b54a676234d17fc",
-    title: "Type wars",
-    author: "Robert C. Martin",
-    url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
-    __v: 0,
-  };
+    const title = blogsAtEnd.map((r) => r.title);
+    expect(title).toContain("From my life");
+  });
 
-  const result = await api
-    .post("/api/blogs")
-    .send(newBlogPost)
-    .expect(201)
-    .expect("Content-Type", /application\/json/);
+  test("blog posts added with no likes by default will have zero likes", async () => {
+    const newBlogPost = {
+      _id: "5a422bc61b54a676234d17fc",
+      title: "Type wars",
+      author: "Robert C. Martin",
+      url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
+      __v: 0,
+    };
 
-  expect(result.body.likes).toBe(0);
-});
+    const result = await api
+      .post("/api/blogs")
+      .send(newBlogPost)
+      .expect(201)
+      .expect("Content-Type", /application\/json/);
 
-test("title or url missing", async () => {
-  const newBlogPost = {
-    _id: "5a422bc61b54a676234d17fc",
-    author: "Robert C. Martin",
-    url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
-    __v: 0,
-  };
+    expect(result.body.likes).toBe(0);
+  });
 
-  await api.post("/api/blogs").send(newBlogPost).expect(400);
+  test("title or url missing", async () => {
+    const newBlogPost = {
+      _id: "5a422bc61b54a676234d17fc",
+      author: "Robert C. Martin",
+      url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
+      __v: 0,
+    };
 
-  const blogsAtEnd = await helper.blogsInDb();
+    await api.post("/api/blogs").send(newBlogPost).expect(400);
 
-  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
+    const blogsAtEnd = await helper.blogsInDb();
+
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
+  });
 });
 
 describe("deletion of a blog", () => {
