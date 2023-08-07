@@ -14,16 +14,16 @@ beforeEach(async () => {
   await User.deleteMany({});
 
   const testUser = {
-    username: "root2",
-    name: "Superuser2",
-    password: "testpassword2",
+    username: "root",
+    name: "Superuser",
+    password: "testpassword",
   };
 
   await api.post("/api/users").send(testUser);
 
   const loggedIn = await api.post("/api/login/").send({
-    username: "root2",
-    password: "testpassword2",
+    username: "root",
+    password: "testpassword",
   });
 
   token = loggedIn.body.token;
@@ -134,19 +134,42 @@ describe("addition of a new blog", () => {
 });
 
 describe("deletion of a blog", () => {
-  test("succeeds with status code 204 if id is valid", async () => {
-    const blogsAtStart = await helper.blogsInDb();
-    const blogToDelete = blogsAtStart[0];
+  let id;
+  beforeEach(async () => {
+    await Blog.deleteMany({});
 
-    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+    const blog = {
+      title: "React patterns",
+      author: "Michael Chan",
+      url: "https://reactpatterns.com/",
+      likes: 7,
+    };
 
-    const blogsAtEnd = await helper.blogsInDb();
+    const response = await api
+      .post("/api/blogs")
+      .set("Authorization", `Bearer ${token}`)
+      .send(blog);
 
-    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length - 1);
+    id = response.body.id;
+  });
+  test("can be deleted by the creator", async () => {
+    const blogsBefore = await helper.blogsInDb();
 
-    const titles = blogsAtEnd.map((r) => r.title);
+    console.log(id);
+    console.log(token);
 
-    expect(titles).not.toContain(blogToDelete.title);
+    await api
+      .delete(`/api/blogs/${id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(204);
+
+    const blogsAfter = await helper.blogsInDb();
+
+    expect(blogsAfter).toHaveLength(0);
+
+    const titles = blogsBefore.map((r) => r.title);
+
+    expect(titles).not.toContain(blogsBefore.title);
   });
 });
 
@@ -165,8 +188,6 @@ describe("updating a blog", () => {
       .send(updatedBlog)
       .expect(204);
 
-    console.log(updatedBlog);
-
     const blogsAtEnd = await helper.blogsInDb();
 
     expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
@@ -175,7 +196,6 @@ describe("updating a blog", () => {
       (blog) => blog.id === blogToUpdate.id
     );
 
-    console.log(updatedBlogInDb);
     expect(updatedBlogInDb.likes).toBe(blogToUpdate.likes + 1);
   });
 });
