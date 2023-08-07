@@ -69,8 +69,8 @@ describe("addition of a new blog", () => {
 
     await api
       .post("/api/blogs")
-      .send(newBlogPost)
       .set("Authorization", `Bearer ${token}`)
+      .send(newBlogPost)
       .expect(201)
       .expect("Content-Type", /application\/json/);
 
@@ -92,8 +92,8 @@ describe("addition of a new blog", () => {
 
     const result = await api
       .post("/api/blogs")
-      .send(newBlogPost)
       .set("Authorization", `Bearer ${token}`)
+      .send(newBlogPost)
       .expect(201)
       .expect("Content-Type", /application\/json/);
 
@@ -110,8 +110,8 @@ describe("addition of a new blog", () => {
 
     await api
       .post("/api/blogs")
-      .send(newBlogPost)
       .set("Authorization", `Bearer ${token}`)
+      .send(newBlogPost)
       .expect(400);
 
     const blogsAtEnd = await helper.blogsInDb();
