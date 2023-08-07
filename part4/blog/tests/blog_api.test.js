@@ -5,11 +5,28 @@ const app = require("../app");
 const api = supertest(app);
 
 const Blog = require("../models/blog");
+const User = require("../models/user");
 
 let token = null;
 
 beforeEach(async () => {
   await Blog.deleteMany({});
+  await User.deleteMany({});
+
+  const testUser = {
+    username: "root2",
+    name: "Superuser2",
+    password: "testpassword2",
+  };
+
+  await api.post("/api/users").send(testUser);
+
+  const loggedIn = await api.post("/api/login/").send({
+    username: "root2",
+    password: "testpassword2",
+  });
+
+  token = loggedIn.body.token;
 
   for (let blog of helper.initialBlogs) {
     let blogObject = new Blog(blog);
@@ -17,33 +34,29 @@ beforeEach(async () => {
   }
 });
 
-test("all blog posts are returned", async () => {
-  const response = await api.get("/api/blogs");
+describe("getting blogs", () => {
+  test("all blog posts are returned", async () => {
+    const response = await api.get("/api/blogs");
 
-  expect(response.body).toHaveLength(helper.initialBlogs.length);
-});
+    expect(response.body).toHaveLength(helper.initialBlogs.length);
+  });
 
-test("a specific blog post is within the returned blogs", async () => {
-  const response = await api.get("/api/blogs");
+  test("a specific blog post is within the returned blogs", async () => {
+    const response = await api.get("/api/blogs");
 
-  const title = response.body.map((r) => r.title);
-  expect(title).toContain("Go To Statement Considered Harmful");
-});
+    const title = response.body.map((r) => r.title);
+    expect(title).toContain("Go To Statement Considered Harmful");
+  });
 
-test("every blog posts unique identifier is named id", async () => {
-  const response = await api.get("/api/blogs");
+  test("every blog posts unique identifier is named id", async () => {
+    const response = await api.get("/api/blogs");
 
-  const blogId = response.body.map((r) => r.id);
-  expect(blogId).toBeDefined();
+    const blogId = response.body.map((r) => r.id);
+    expect(blogId).toBeDefined();
+  });
 });
 
 describe("addition of a new blog", () => {
-  beforeEach(async () => {
-    const login = await api
-      .post("/api/login")
-      .send({ username: "blagranda", password: "testingapp2" });
-    token = login.body.token;
-  });
   test("a valid blog post can be added", async () => {
     const newBlogPost = {
       _id: "5a422bc61b54a676234d17fe",
@@ -53,8 +66,6 @@ describe("addition of a new blog", () => {
       likes: 0,
       __v: 0,
     };
-
-    console.log("TOKEN:", token);
 
     await api
       .post("/api/blogs")
@@ -82,6 +93,7 @@ describe("addition of a new blog", () => {
     const result = await api
       .post("/api/blogs")
       .send(newBlogPost)
+      .set("Authorization", `Bearer ${token}`)
       .expect(201)
       .expect("Content-Type", /application\/json/);
 
@@ -96,11 +108,28 @@ describe("addition of a new blog", () => {
       __v: 0,
     };
 
-    await api.post("/api/blogs").send(newBlogPost).expect(400);
+    await api
+      .post("/api/blogs")
+      .send(newBlogPost)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(400);
 
     const blogsAtEnd = await helper.blogsInDb();
 
     expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
+  });
+
+  test("succeeds with status code 401 if a token is not provided", async () => {
+    const newBlogPost = {
+      _id: "5a422bc61b54a676234d17fc",
+      title: "Type wars",
+      author: "Robert C. Martin",
+      url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
+      likes: 120,
+      __v: 0,
+    };
+
+    await api.post("/api/blogs").send(newBlogPost).expect(401);
   });
 });
 
